@@ -1,11 +1,11 @@
 const express = require('express');
 const Product = require('../models/product');
-// Middleware for authentication (optional)
+const { protect } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
 // Create Product
-router.post('/', async (req, res) => {
+router.post('/', protect, async (req, res) => {
   const { name, price, description, tax, discount } = req.body;
 
   const product = new Product({ name, price, description, tax, discount });
@@ -19,13 +19,13 @@ router.post('/', async (req, res) => {
 });
 
 // Get All Products
-router.get('/', async (req, res) => {
+router.get('/', protect, async (req, res) => {
   const products = await Product.find({});
   res.json(products);
 });
 
 // Get Product by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', protect, async (req, res) => {
   const product = await Product.findById(req.params.id);
   if (product) {
     res.json(product);
@@ -35,7 +35,7 @@ router.get('/:id', async (req, res) => {
 });
 
 // Update Product
-router.put('/:id', async (req, res) => {
+router.put('/:id', protect, async (req, res) => {
   const { name, price, description, tax, discount } = req.body;
 
   const product = await Product.findById(req.params.id);
@@ -55,11 +55,12 @@ router.put('/:id', async (req, res) => {
 });
 
 // Delete Product
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
   const product = await Product.findById(req.params.id);
 
   if (product) {
-    await product.deleteOne();
+    // await product.remove();
+    await Product.deleteOne({ _id: req.params.id });
     res.json({ message: 'Product removed' });
   } else {
     res.status(404).json({ message: 'Product not found' });
